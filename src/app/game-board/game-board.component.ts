@@ -53,7 +53,7 @@ export class GameBoardComponent implements OnInit
     return this.currentPlayer ? 'X' : 'O';
   }
 
-  CellClicked(index: number): void
+  public CellClicked(index: number): void
   {
     if (!this.cells[index] && !this.winner)
     {
