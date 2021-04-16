@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, Input, OnInit} from '@angular/core';
 import {MatCheckboxChange} from '@angular/material/checkbox';
 import {CellComponent} from '../cell/cell.component';
 
@@ -7,8 +7,8 @@ import {CellComponent} from '../cell/cell.component';
   template: `
     <div>
     <h1 class="mat-display-2" >Current Player: {{CurrentPlayer}}</h1>
-    <button mat-raised-button color="primary" (click)="CreateGame()">Create new Game</button>
-    <mat-checkbox color="primary" (change)="PlayComputer($event)">Play Computer</mat-checkbox>
+    <button mat-raised-button color="primary" (click)="CreateGame(); myCheckbox.checked=false">Create new Game</button>
+    <mat-checkbox color="primary" #myCheckbox (change)="PlayComputer($event)">Play Computer</mat-checkbox>
     <h2 class="mat-display-2" *ngIf="winner">
       {{winner}} won!
     </h2>
@@ -25,7 +25,8 @@ import {CellComponent} from '../cell/cell.component';
   `,
   styleUrls: ['./game-board.component.css']
 })
-export class GameBoardComponent implements OnInit {
+export class GameBoardComponent implements OnInit
+{
   cells: any[];
   currentPlayer: boolean;
   winner: boolean;
@@ -33,11 +34,13 @@ export class GameBoardComponent implements OnInit {
   playComputer: boolean;
   constructor() { }
 
-  ngOnInit(): void{
+  ngOnInit(): void
+  {
     this.CreateGame();
   }
 
-  CreateGame(): void{
+  CreateGame(): void
+  {
     this.cells = Array(9).fill(null);
     this.winner = null;
     this.tie = null;
@@ -45,64 +48,79 @@ export class GameBoardComponent implements OnInit {
     this.playComputer = false;
   }
 
-  get CurrentPlayer(): string{
+  get CurrentPlayer(): string
+  {
     return this.currentPlayer ? 'X' : 'O';
   }
 
-  CellClicked(index: number): void{
-    if (!this.cells[index] && !this.winner){
+  CellClicked(index: number): void
+  {
+    if (!this.cells[index] && !this.winner)
+    {
       this.cells.splice(index, 1, this.CurrentPlayer);
       this.currentPlayer = !this.currentPlayer;
     }
     this.CheckForWinOrTie();
-    if (this.playComputer && !this.currentPlayer && !this.winner && !this.tie){
+    if (this.playComputer && !this.currentPlayer && !this.winner && !this.tie)
+    {
       this.ComputersTurn();
     }
   }
 
-  private ComputersTurn(): void {
-    console.log('my Turn');
+  private ComputersTurn(): void
+  {
     const bestMove = this.GetBestMove();
     this.CellClicked(bestMove);
   }
 
 
-  private MiniMax(tmpBoard: any[], depth: number, isMax: boolean): number {
+  private MiniMax(depth: number, tmpBoard: any[], isMax: boolean): number
+  {
     const score = this.EvaluateBoard(tmpBoard);
-    if (score === 10 || score === -10){
+    if (score === 10 || score === -10)
+    {
       return score;
     }
 
-    function MovesLeft(): boolean {
-      let count = 0;
-      for (const cell of tmpBoard){
-        if (cell === null){
-          count ++;
+    function MovesLeft(): boolean
+    {
+      for (const cell of tmpBoard)
+      {
+        if (cell === null)
+        {
+          return true;
         }
       }
-      return count > 0;
+      return false;
     }
 
-    if (!MovesLeft()){
+    if (!MovesLeft())
+    {
       return 0;
     }
-    if (isMax){
+    if (isMax)
+    {
       let best = -1000;
-      for (let i = 0; i < 9; i++){
-        if (tmpBoard[i] === null){
-          tmpBoard[i] = this.currentPlayer;
-          best = Math.max( best, this.MiniMax(tmpBoard, depth + 1, !isMax));
-          tmpBoard[i] = null;
+      for (let i = 0; i < 9; i++)
+      {
+        if (tmpBoard[i] === null)
+        {
+          tmpBoard.splice(i, 1, '0');
+          best = Math.max( best, this.MiniMax(depth + 1, tmpBoard, !isMax));
+          tmpBoard.splice(i, 1, null);
         }
       }
       return best;
-    }else{
+    }else
+    {
       let best = 1000;
-      for (let i = 0; i < 9; i++){
-        if (tmpBoard[i] === null){
-          tmpBoard[i] = !this.currentPlayer;
-          best = Math.min( best, this.MiniMax(tmpBoard, depth + 1, !isMax));
-          tmpBoard[i] = null;
+      for (let i = 0; i < 9; i++)
+      {
+        if (tmpBoard[i] === null)
+        {
+          tmpBoard.splice(i, 1, 'X');
+          best = Math.min( best, this.MiniMax(depth + 1, tmpBoard,  !isMax));
+          tmpBoard.splice(i, 1, null);
         }
       }
       return best;
@@ -110,54 +128,86 @@ export class GameBoardComponent implements OnInit {
   }
 
   private EvaluateBoard(tmpBoard: any[]): number {
-    for (let i = 0; i < 3; i++){
+    for (let i = 0; i < 3; i++) {
       // Check Columns
-      if ( tmpBoard[i] === tmpBoard[i + 3]
+      if (tmpBoard[i] === tmpBoard[i + 3]
         && tmpBoard[i] === tmpBoard[i + 6]
-        && tmpBoard[i] != null){
-        if (tmpBoard[i] === this.currentPlayer){
+        && tmpBoard[i] !== null) {
+        if (tmpBoard[i] === this.CurrentPlayer) {
           return 10;
-        }else{
+        } else {
           return -10;
         }
       }
       // Check Rows
       if (tmpBoard[i * 3] === tmpBoard[i * 3 + 1]
         && tmpBoard[i * 3] === tmpBoard[i * 3 + 2]
-        && tmpBoard[i * 3] != null){
-        if (tmpBoard[i * 3] === this.currentPlayer){
+        && tmpBoard[i * 3] !== null) {
+        if (tmpBoard[i * 3] === this.CurrentPlayer) {
           return 10;
-        }else{
+        } else {
           return -10;
         }
       }
     }
     // Check Diag
-    if (this.cells[4] != null
-      && (this.cells[0] === this.cells[4]
-        && this.cells[0] === this.cells[8])
-      || (this.cells[2] === this.cells[4]
-        && this.cells[2] === this.cells[6])){
-      if (tmpBoard[4] === this.currentPlayer){
+    if (tmpBoard[4] !== null
+      && ((tmpBoard[0] === tmpBoard[4]
+        && tmpBoard[0] === tmpBoard[8])
+        || (tmpBoard[2] === tmpBoard[4]
+          && tmpBoard[2] === tmpBoard[6]))) {
+      if (tmpBoard[4] === this.CurrentPlayer) {
         return 10;
-      }else{
+      } else {
         return -10;
       }
     }
     return 0;
   }
 
-  private GetBestMove(): number {
-    const tmpBoard = this.cells;
+  private PlayerWinsNextMove(tmpBoard: any[]): number
+  {
+    for (let i = 0; i < 9; i++) {
+      if (tmpBoard[i] === null) {
+        tmpBoard.splice(i, 1, 'O');
+        if (this.EvaluateBoard(tmpBoard) === 10) {
+          return i;
+        }
+        tmpBoard.splice(i, 1, null);
+      }
+    }
+    for (let i = 0; i < 9; i++)
+    {
+      if (tmpBoard[i] === null){
+        tmpBoard.splice(i, 1, 'X');
+        if (this.EvaluateBoard(tmpBoard) === -10) {
+          return i;
+        }
+        tmpBoard.splice(i, 1, null);
+      }
+    }
+    return -1;
+  }
+
+  private GetBestMove(): number
+  {
+    const tmpBoard = [...this.cells];
+    const nextTurn = this.PlayerWinsNextMove(tmpBoard);
+    if (nextTurn !== -1)
+    {
+      return nextTurn;
+    }
     let bestValue = -1000;
     let bestCell = -1;
-    for (let i = 0; i < 9; i++){
-      if (tmpBoard[i] == null){
-        tmpBoard [i] = this.currentPlayer;
-        const moveCost = this.MiniMax(tmpBoard, 0, false);
-        tmpBoard[i] = null;
-
-        if (moveCost > bestValue){
+    for (let i = 0; i < 9; i++)
+    {
+      if (tmpBoard[i] === null)
+      {
+        tmpBoard.splice(i, 1, this.CurrentPlayer);
+        const moveCost = this.MiniMax(0, tmpBoard,  true);
+        tmpBoard.splice(i, 1, null);
+        if (moveCost > bestValue)
+        {
           bestCell = i;
           bestValue = moveCost;
         }
@@ -166,50 +216,60 @@ export class GameBoardComponent implements OnInit {
     return bestCell;
   }
 
-  private CheckForWinOrTie(): void{
+  private CheckForWinOrTie(): void
+  {
     this.CheckForWin();
     this.CheckForTie();
   }
 
-  private CheckForWin(): void{
-    for (let i = 0; i < 3; i++){
+  private CheckForWin(): void
+  {
+    for (let i = 0; i < 3; i++)
+    {
       // Check Columns
       if ( this.cells[i] === this.cells[i + 3]
         && this.cells[i] === this.cells[i + 6]
-        && this.cells[i] != null){
+        && this.cells[i] !== null){
         this.winner = this.cells[i];
       }
       // Check Rows
       if (this.cells[i * 3] === this.cells[i * 3 + 1]
         && this.cells[i * 3] === this.cells[i * 3 + 2]
-        && this.cells[i * 3] != null){
+        && this.cells[i * 3] !== null)
+      {
         this.winner = this.cells[i * 3];
       }
     }
     // Check Diag
-    if (this.cells[4] != null
-      && (this.cells[0] === this.cells[4]
+    if (this.cells[4] !== null
+      && ((this.cells[0] === this.cells[4]
       && this.cells[0] === this.cells[8])
       || (this.cells[2] === this.cells[4]
-      && this.cells[2] === this.cells[6])){
+      && this.cells[2] === this.cells[6])))
+    {
       this.winner = this.cells[4];
     }
   }
 
-  private CheckForTie(): void{
-    if (this.winner){
+  private CheckForTie(): void
+  {
+    if (this.winner)
+    {
       return;
     }
     let count = 0;
-    for (const cell of this.cells){
-      if (cell != null) {
+    for (const cell of this.cells)
+    {
+      if (cell != null)
+      {
         count++;
       }
     }
     this.tie = count === 9;
   }
 
-  PlayComputer(event: MatCheckboxChange): void {
+  PlayComputer(event: MatCheckboxChange): void
+  {
     this.playComputer = event.checked;
   }
 }
