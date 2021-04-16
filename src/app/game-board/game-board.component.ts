@@ -39,7 +39,7 @@ export class GameBoardComponent implements OnInit
     this.CreateGame();
   }
 
-  CreateGame(): void
+  public CreateGame(): void
   {
     this.cells = Array(9).fill(null);
     this.winner = null;
@@ -48,7 +48,7 @@ export class GameBoardComponent implements OnInit
     this.playComputer = false;
   }
 
-  get CurrentPlayer(): string
+  public get CurrentPlayer(): string
   {
     return this.currentPlayer ? 'X' : 'O';
   }
@@ -77,11 +77,11 @@ export class GameBoardComponent implements OnInit
   private MiniMax(depth: number, tmpBoard: any[], isMax: boolean, alpha: number, beta: number): number
   {
     const score = this.EvaluateBoard(tmpBoard)[0];
-    if (score === 10 || score === -10)
-    {
+    // base cases
+    if (score === 10 || score === -10) {
       return score;
     }
-
+    // Are there any moves left?
     function MovesLeft(): boolean
     {
       for (const cell of tmpBoard)
@@ -93,11 +93,12 @@ export class GameBoardComponent implements OnInit
       }
       return false;
     }
-
+    // If there are no more moves return;
     if (!MovesLeft())
     {
       return 0;
     }
+    // If its computer turn get max value if its human turn try to minimize value.
     if (isMax)
     {
       let best = -1000;
@@ -114,7 +115,7 @@ export class GameBoardComponent implements OnInit
           }
         }
       }
-      return best;
+      return ++best;
     }else
     {
       let best = 1000;
@@ -131,7 +132,7 @@ export class GameBoardComponent implements OnInit
           }
         }
       }
-      return best;
+      return ++best;
     }
   }
 
@@ -175,6 +176,7 @@ export class GameBoardComponent implements OnInit
 
   private PlayerWinsNextMove(tmpBoard: any[]): number
   {
+    // If computer can win do it.
     for (let i = 0; i < 9; i++) {
       if (tmpBoard[i] === null) {
         tmpBoard.splice(i, 1, 'O');
@@ -184,6 +186,7 @@ export class GameBoardComponent implements OnInit
         tmpBoard.splice(i, 1, null);
       }
     }
+    // If human can win block.
     for (let i = 0; i < 9; i++)
     {
       if (tmpBoard[i] === null){
@@ -200,6 +203,7 @@ export class GameBoardComponent implements OnInit
   private GetBestMove(): number
   {
     const tmpBoard = [...this.cells];
+    // if possible win this turn, if not prevent human from winning.
     const nextTurn = this.PlayerWinsNextMove(tmpBoard);
     if (nextTurn !== -1)
     {
@@ -207,6 +211,7 @@ export class GameBoardComponent implements OnInit
     }
     let bestValue = -1000;
     let bestCell = -1;
+    // itterate through options and pick the best.
     for (let i = 0; i < 9; i++)
     {
       if (tmpBoard[i] === null)
@@ -241,6 +246,7 @@ export class GameBoardComponent implements OnInit
 
   private CheckForTie(): void
   {
+    // If there is already a winner then there is no need to check for a tie.
     if (this.winner)
     {
       return;
@@ -256,7 +262,7 @@ export class GameBoardComponent implements OnInit
     this.tie = count === 9;
   }
 
-  PlayComputer(event: MatCheckboxChange): void
+  public PlayComputer(event: MatCheckboxChange): void
   {
     this.playComputer = event.checked;
   }
