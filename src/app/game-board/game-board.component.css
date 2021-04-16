@@ -1,0 +1,23 @@
+main {
+  position: absolute;
+  display: grid;
+  grid-template-columns: 200px 200px 200px;
+  grid-template-rows: 200px 200px 200px;
+}
+app-cell{
+  border: 1px gray solid;
+  height: 200px;
+  width: 200px;
+}
+
+button {
+  margin: 15px;
+}
+div {
+  width: 600px;
+}
+
+.mat-display-2 {
+  text-align: center;
+  margin-bottom: 10px;
+}
