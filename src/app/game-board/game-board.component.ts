@@ -5,7 +5,7 @@ import {CellComponent} from '../cell/cell.component';
 @Component({
   selector: 'app-game-board',
   template: `
-    <div>
+    <div class="mainPage">
     <h1 class="mat-display-2" >Current Player: {{CurrentPlayer}}</h1>
     <button mat-raised-button color="primary" (click)="CreateGame(); myCheckbox.checked=false">Create new Game</button>
     <mat-checkbox color="primary" #myCheckbox (change)="PlayComputer($event)">Play Computer</mat-checkbox>
@@ -74,7 +74,7 @@ export class GameBoardComponent implements OnInit
   }
 
 
-  private MiniMax(depth: number, tmpBoard: any[], isMax: boolean): number
+  private MiniMax(depth: number, tmpBoard: any[], isMax: boolean, alpha: number, beta: number): number
   {
     const score = this.EvaluateBoard(tmpBoard)[0];
     if (score === 10 || score === -10)
@@ -106,8 +106,12 @@ export class GameBoardComponent implements OnInit
         if (tmpBoard[i] === null)
         {
           tmpBoard.splice(i, 1, '0');
-          best = Math.max( best, this.MiniMax(depth + 1, tmpBoard, !isMax));
+          best = Math.max( best, this.MiniMax(depth + 1, tmpBoard, !isMax, alpha, beta));
+          alpha = Math.max(alpha, best);
           tmpBoard.splice(i, 1, null);
+          if (beta <= alpha){
+            break;
+          }
         }
       }
       return best;
@@ -119,8 +123,12 @@ export class GameBoardComponent implements OnInit
         if (tmpBoard[i] === null)
         {
           tmpBoard.splice(i, 1, 'X');
-          best = Math.min( best, this.MiniMax(depth + 1, tmpBoard,  !isMax));
+          best = Math.min( best, this.MiniMax(depth + 1, tmpBoard,  !isMax, alpha, beta));
+          beta = Math.min(beta, best);
           tmpBoard.splice(i, 1, null);
+          if (beta <= alpha){
+            break;
+          }
         }
       }
       return best;
@@ -204,7 +212,7 @@ export class GameBoardComponent implements OnInit
       if (tmpBoard[i] === null)
       {
         tmpBoard.splice(i, 1, this.CurrentPlayer);
-        const moveCost = this.MiniMax(0, tmpBoard,  true);
+        const moveCost = this.MiniMax(0, tmpBoard,  true, -1000, 1000);
         tmpBoard.splice(i, 1, null);
         if (moveCost > bestValue)
         {
