@@ -76,7 +76,7 @@ export class GameBoardComponent implements OnInit
 
   private MiniMax(depth: number, tmpBoard: any[], isMax: boolean): number
   {
-    const score = this.EvaluateBoard(tmpBoard);
+    const score = this.EvaluateBoard(tmpBoard)[0];
     if (score === 10 || score === -10)
     {
       return score;
@@ -127,16 +127,16 @@ export class GameBoardComponent implements OnInit
     }
   }
 
-  private EvaluateBoard(tmpBoard: any[]): number {
+  private EvaluateBoard(tmpBoard: any[]): (number | any)[] {
     for (let i = 0; i < 3; i++) {
       // Check Columns
       if (tmpBoard[i] === tmpBoard[i + 3]
         && tmpBoard[i] === tmpBoard[i + 6]
         && tmpBoard[i] !== null) {
         if (tmpBoard[i] === this.CurrentPlayer) {
-          return 10;
+          return [10, tmpBoard[i]];
         } else {
-          return -10;
+          return [-10, tmpBoard[i]];
         }
       }
       // Check Rows
@@ -144,9 +144,9 @@ export class GameBoardComponent implements OnInit
         && tmpBoard[i * 3] === tmpBoard[i * 3 + 2]
         && tmpBoard[i * 3] !== null) {
         if (tmpBoard[i * 3] === this.CurrentPlayer) {
-          return 10;
+          return [10, tmpBoard[i * 3]];
         } else {
-          return -10;
+          return [-10, tmpBoard[i * 3]];
         }
       }
     }
@@ -157,12 +157,12 @@ export class GameBoardComponent implements OnInit
         || (tmpBoard[2] === tmpBoard[4]
           && tmpBoard[2] === tmpBoard[6]))) {
       if (tmpBoard[4] === this.CurrentPlayer) {
-        return 10;
+        return [10, tmpBoard[4]];
       } else {
-        return -10;
+        return [-10, tmpBoard[4]];
       }
     }
-    return 0;
+    return [0, null];
   }
 
   private PlayerWinsNextMove(tmpBoard: any[]): number
@@ -170,7 +170,7 @@ export class GameBoardComponent implements OnInit
     for (let i = 0; i < 9; i++) {
       if (tmpBoard[i] === null) {
         tmpBoard.splice(i, 1, 'O');
-        if (this.EvaluateBoard(tmpBoard) === 10) {
+        if (this.EvaluateBoard(tmpBoard)[0] === 10) {
           return i;
         }
         tmpBoard.splice(i, 1, null);
@@ -180,7 +180,7 @@ export class GameBoardComponent implements OnInit
     {
       if (tmpBoard[i] === null){
         tmpBoard.splice(i, 1, 'X');
-        if (this.EvaluateBoard(tmpBoard) === -10) {
+        if (this.EvaluateBoard(tmpBoard)[0] === -10) {
           return i;
         }
         tmpBoard.splice(i, 1, null);
@@ -224,30 +224,10 @@ export class GameBoardComponent implements OnInit
 
   private CheckForWin(): void
   {
-    for (let i = 0; i < 3; i++)
+    const gameOver = this.EvaluateBoard(this.cells)[1];
+    if (gameOver !== null)
     {
-      // Check Columns
-      if ( this.cells[i] === this.cells[i + 3]
-        && this.cells[i] === this.cells[i + 6]
-        && this.cells[i] !== null){
-        this.winner = this.cells[i];
-      }
-      // Check Rows
-      if (this.cells[i * 3] === this.cells[i * 3 + 1]
-        && this.cells[i * 3] === this.cells[i * 3 + 2]
-        && this.cells[i * 3] !== null)
-      {
-        this.winner = this.cells[i * 3];
-      }
-    }
-    // Check Diag
-    if (this.cells[4] !== null
-      && ((this.cells[0] === this.cells[4]
-      && this.cells[0] === this.cells[8])
-      || (this.cells[2] === this.cells[4]
-      && this.cells[2] === this.cells[6])))
-    {
-      this.winner = this.cells[4];
+      this.winner = gameOver;
     }
   }
 
