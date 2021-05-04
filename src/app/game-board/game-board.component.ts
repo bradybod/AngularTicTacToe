@@ -78,8 +78,11 @@ export class GameBoardComponent implements OnInit
   {
     const score = this.EvaluateBoard(tmpBoard)[0];
     // base cases
-    if (score === 10 || score === -10) {
-      return score;
+    if (score === 10) {
+      return score - depth;
+    }
+    if (score === -10) {
+      return score + depth;
     }
     // Are there any moves left?
     function MovesLeft(): boolean
@@ -174,41 +177,9 @@ export class GameBoardComponent implements OnInit
     return [0, null];
   }
 
-  private PlayerWinsNextMove(tmpBoard: any[]): number
-  {
-    // If computer can win do it.
-    for (let i = 0; i < 9; i++) {
-      if (tmpBoard[i] === null) {
-        tmpBoard.splice(i, 1, 'O');
-        if (this.EvaluateBoard(tmpBoard)[0] === 10) {
-          return i;
-        }
-        tmpBoard.splice(i, 1, null);
-      }
-    }
-    // If human can win block.
-    for (let i = 0; i < 9; i++)
-    {
-      if (tmpBoard[i] === null){
-        tmpBoard.splice(i, 1, 'X');
-        if (this.EvaluateBoard(tmpBoard)[0] === -10) {
-          return i;
-        }
-        tmpBoard.splice(i, 1, null);
-      }
-    }
-    return -1;
-  }
-
   private GetBestMove(): number
   {
     const tmpBoard = [...this.cells];
-    // if possible win this turn, if not prevent human from winning.
-    const nextTurn = this.PlayerWinsNextMove(tmpBoard);
-    if (nextTurn !== -1)
-    {
-      return nextTurn;
-    }
     let bestValue = -1000;
     let bestCell = -1;
     // itterate through options and pick the best.
